@@ -1308,45 +1308,30 @@
             const subject = document.getElementById('subject').value;
             const message = document.getElementById('message').value;
             
-            // Show loading state
-            const submitButton = e.target.querySelector('button[type="submit"]');
-            const originalButtonText = submitButton.innerHTML;
-            submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
-            submitButton.disabled = true;
+            // Simple validation
+            if (!name || !email || !message) {
+                alert('Please fill in all required fields.');
+                return;
+            }
             
-            // Google Apps Script Web App URL
-            const GOOGLE_SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbyOxQJcFYZXroPVoyzfxjwTkrr7UivtwbUJaSQTe5dtx5V2p6sUw8_uul2KgqsSTGRX/exec';
+            // Create mailto link
+            const mailtoLink = `mailto:alokb3520@gmail.com?subject=Portfolio Contact from ${encodeURIComponent(name)}: ${encodeURIComponent(subject || 'No Subject')}&body=Name: ${encodeURIComponent(name)}%0D%0AEmail: ${encodeURIComponent(email)}%0D%0ASubject: ${encodeURIComponent(subject || 'No Subject')}%0D%0AMessage: %0D%0A${encodeURIComponent(message)}`;
             
-            fetch(GOOGLE_SCRIPT_URL, {
-                method: 'POST',
-                body: JSON.stringify({
-                    name: name,
-                    email: email,
-                    subject: subject,
-                    message: message
-                }),
-                headers: {
-                    'Content-Type': 'application/json'
-                }
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.status === 'success') {
-                    alert('Thank you for your message! I will get back to you soon.');
-                    e.target.reset();
-                } else {
-                    throw new Error(data.message || 'Failed to send message');
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert('Sorry, there was an error sending your message. Please try again later.');
-            })
-            .finally(() => {
-                // Reset button state
-                submitButton.innerHTML = originalButtonText;
-                submitButton.disabled = false;
-            });
+            // Try to open email client
+            try {
+                window.location.href = mailtoLink;
+                alert('Opening your email client... If it does not open, please email me directly at alokb3520@gmail.com');
+                e.target.reset();
+            } catch (error) {
+                console.error('Error opening email client:', error);
+                // Fallback: copy email to clipboard and show instructions
+                navigator.clipboard.writeText('alokb3520@gmail.com').then(() => {
+                    alert('Please email me at alokb3520@gmail.com (copied to clipboard). I\'ve also prepared the following information for your email:\n\nName: ' + name + '\nEmail: ' + email + '\nSubject: ' + (subject || 'No Subject') + '\nMessage: ' + message);
+                }).catch(() => {
+                    alert('Please email me at alokb3520@gmail.com. Here is your message information:\\n\\nName: ' + name + '\\nEmail: ' + email + '\\nSubject: ' + (subject || 'No Subject') + '\\nMessage: ' + message);
+                });
+                e.target.reset();
+            }
         });
         
         // Fun stats animation
